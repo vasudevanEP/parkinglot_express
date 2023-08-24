@@ -22,6 +22,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var vehicleTypesRouter = require('./routes/vehicleTypes');
 var ticketsRouter = require('./routes/tickets');
+var checkinOrCheckoutRouter = require('./routes/checkinOrCheckout');
 
 var app = express();
 
@@ -39,6 +40,10 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api/vehicle-types', vehicleTypesRouter);
 app.use('/api/tickets', ticketsRouter);
+app.use('/api/updateTicketstatus', ticketsRouter);
+app.use('/api/checkin', checkinOrCheckoutRouter);
+app.use('/api/checkout', checkinOrCheckoutRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

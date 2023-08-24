@@ -9,7 +9,7 @@ const saveTickets = (req) => {
     let date = today.getFullYear() + '-' + ("0" + (today.getMonth()+1)).slice(-2) + '-' + ("0" + today.getDate()).slice(-2) 
     + ' '+ ("0" + today.getHours()).slice(-2) + ':' + ("0" + today.getMinutes()).slice(-2) + ':' + ( "0" + today.getSeconds()).slice(-2); 
     const ticket = new TicketsModel({
-        vehicle_number: req.body.vehicle_number,
+        vehicle_number: null,
         vehicle_type_id: req.body.vehicle_type_id,
         time_in : date,
         ticket_number:  Math.random().toString(36).substring(2,14)
@@ -30,10 +30,10 @@ function toHoursAndMinutes(totalSeconds) {
   }
 
 const updateCheckOut = async (req) => {
-    vehicle_number = req.body.vehicle_number;
+    ticket_number = req.body.ticket_number;
     
     /* Tickets Details */ 
-    ticketDetail = await  TicketsModel.findOne({ $or : [{vehicle_number: vehicle_number},{ticket_number : vehicle_number}] });
+    ticketDetail = await  TicketsModel.findOne({ticket_number : ticket_number});
     if (ticketDetail != null) {
         /* Get vehicle Details */
         
@@ -81,15 +81,6 @@ function calculateTotalPrice(hrs,mins,initial_hrs,initial_entry_costs,additional
         return initial_entry_costs;
     }
 }
-/* Get All tickets */
-router.get('/', async (req, res) => {
-    try {
-        const data = await TicketsModel.find();
-        res.json(data);
-    } catch (err) {
-        res.status(500).json({message: err.message});
-    }
-})
 
 /* Check In Tickets */
 router.post('/', async (req, res) => {
@@ -101,46 +92,12 @@ router.post('/', async (req, res) => {
     }
 });
 
-/* Check Out */
-router.put('/', async (req, res) => {
+router.put('/', async(req, res) => {
     try {
         data = await updateCheckOut(req);
         res.json(data);
-    } catch (err) {
+    }catch (err){
         res.status(500).json({message: err.message});
-    }
-});
-
-/* Get ticket details */
-router.get('/:ticket_number', async (req, res) => {
-    try {
-        ticket_number = req.params.ticket_number;
-
-        /* Tickets Details */ 
-        ticketDetail = await  TicketsModel.findOne({ $or : [{vehicle_number: ticket_number},{ticket_number : ticket_number}] });
-        if(ticketDetail == null)
-        {
-            res.json({});
-        }else{
-       res.json(ticketDetail);}
-    } catch (err) {
-        res.status(500).json({message: err.message});
-    }
-})
-
-router.patch('/', async (req, res) => {
-    try {
-        const id = req.body.id;
-        const updatedData = req.body;
-        const options = { new: true };
-        
-        const result = await TicketsModel.findByIdAndUpdate(
-            id, updatedData, options
-        )
-
-        res.send(result)
-    } catch (err) {
-        res.status(500).json({ message: err.message })
     }
 });
 

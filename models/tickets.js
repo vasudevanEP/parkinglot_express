@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const dataSchema = new mongoose.Schema({
     vehicle_number: {
-        required: true,
+        required: false,
         type: String
     },
     ticket_number: {
