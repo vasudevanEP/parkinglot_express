@@ -23,6 +23,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var vehicleTypesRouter = require('./routes/vehicleTypes');
 var companyRouter = require('./routes/company');
+var spaceRouter = require('./routes/spacelot');
 var ticketsRouter = require('./routes/tickets');
 var checkinOrCheckoutRouter = require('./routes/checkinOrCheckout');
 var authRouter = require('./routes/auth');
@@ -49,6 +50,7 @@ app.use('/api/updateTicketstatus', ticketsRouter);
 app.use('/api/checkin', checkinOrCheckoutRouter);
 app.use('/api/checkout', checkinOrCheckoutRouter);
 app.use('/api/company', companyRouter);
+app.use('/api/spaces', spaceRouter);
 
 
 // catch 404 and forward to error handler

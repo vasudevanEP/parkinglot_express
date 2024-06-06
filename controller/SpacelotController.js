@@ -1,45 +1,42 @@
-var User = require('../models/users');
+var Spacelot = require('../models/spacelot');
 var Company = require('../models/company');
+const { get } = require('mongoose');
 
-/* Get all users */
-let getUsers = async (req, res) => {
+/* Get All Spaces */
+let getall = async (req, res) => {
+
     let users = [];
     let SessUser = req.user;
     if (SessUser.company) {
-        /* Get Company Users Only! */
-        users = await User.find({ company: SessUser.company }).exec();
+        /* Get Company Space Only! */
+        spaces = await Spacelot.find({ company: SessUser.company }).exec();
     }
     else {
         /* Get All users - Use in Admin Role only */
-        users = await User.find({}).populate('company').exec();
+        spaces = await Spacelot.find({}).populate('company').exec();
     }
-
     res.status(200).json({
         status: "success",
-        data: users,
-        message: "Users List.",
+        data: spaces,
+        message: "Spacelot List.",
     });
 res.end();
-}
+};
 
-exports.getUsers = getUsers;
+exports.getall = getall;
 
-let getUser = async (req, res) => {
+/* Get a space */
+let getspace = async (req, res) => {
+    const id = req.params.id;
     try {
-        const id = req.params.id;
-        if(id == req.user._id)
-        {
-            throw new Error('You are not allowed to find this user');
-        }
-            const data = await User.findById(id)
-        
+        const data = await Spacelot.findById(id);
         res.status(200).json({
             status: "success",
             data: data,
             message:
-                `Document with ${data.name} has been deleted..`,
+                ``,
         });
-    }catch (err) {
+    } catch (err) {
         res.status(500).json({
             status: "error",
             code: 500,
@@ -47,18 +44,16 @@ let getUser = async (req, res) => {
             message: "Internal Server Error",
         });
     }
-    res.end();
-
 }
-exports.getUser = getUser;
 
-/* Create New Users */
+exports.getspace = getspace;
 
-let CreateUser = async (req, res) => {
+/* Create new space */
 
-
-    let { fullname, phone, email, password, user_role, companyId } = req.body;
+let createSpace = async (req, res) => {
     try {
+
+        let {space_name, initial_hour_cost, additional_cost, initial_hrs, capacity,vehicle_type, parking_type, companyId} = req.body;
 
         const existingCompany = await Company.findById(companyId).exec();
         console.log(`Company ${existingCompany}`);
@@ -68,33 +63,36 @@ let CreateUser = async (req, res) => {
                 data: [],
                 message: "Company not found! Contact App Administrator",
             });
-        // create an instance of a user
-        const newUser = new User({
-            fullname,
-            phone,
-            email,
-            password,
-            role: user_role || "0x01", /* user role default */
-            company: existingCompany._id
-        });
-        // Check if user already exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser)
+
+            // create an instance of a user
+            const newspace = new Spacelot({
+                space_name,
+                initial_hour_cost,
+                additional_cost,
+                initial_hrs,
+                capacity,
+                vehicle_type,
+                parking_type,
+                company: existingCompany._id
+            });
+
+            const existingSpace = await Spacelot.findOne({ space_name, company:companyId  });
+        if (existingSpace)
             return res.status(400).json({
                 status: "failed",
                 data: [],
-                message: "User Already Exist! Please try with some other email.",
+                message: "Space name Already Exist! Please try with some other name.",
             });
-        const savedUser = await newUser.save(); // save new user into the database
-        const {role,company, ...user_data } = savedUser._doc;
+        const savedSpace = await newspace.save();
+        const {company, ...user_data } = savedSpace._doc;
         res.status(200).json({
             status: "success",
             data: [user_data],
             message:
-                "A new user account has been successfully created.",
+                "A new space has been successfully created.",
         });
-
-    } catch (err) {
+    }
+    catch (err) {
         res.status(500).json({
             status: "error",
             code: 500,
@@ -102,14 +100,12 @@ let CreateUser = async (req, res) => {
             message: "Internal Server Error",
         });
     }
-    res.end();
-};
+}
 
-exports.createUser = CreateUser;
+exports.createSpace = createSpace
 
-/* Update User */
-
-let updateUser = async(req, res)=>{
+/* Update space */
+let updateSpace = async (req, res) => {
     try {
 
         // let { fullname,email,phone,password,company,user_role} = req.body;
@@ -117,21 +113,17 @@ let updateUser = async(req, res)=>{
         const updatedData = req.body;
         const options = { new: true };
         
-        
-        const result = await User.findOneAndUpdate(
+        const result = await Spacelot.findOneAndUpdate(
             { _id : id },
              updatedData,
              options
         )
-
-        
-        
-        const {role,company, ...user_data } = result._doc;
+        const {company, ...user_data } = result._doc;
         res.status(200).json({
             status: "success",
             data: user_data,
             message:
-                "A user account has been successfully updated.",
+                "Space has been successfully updated.",
         });
     } catch (err) {
         res.status(500).json({
@@ -142,25 +134,17 @@ let updateUser = async(req, res)=>{
         });
     }
     res.end();
-} 
-exports.updateUser = updateUser;
+}
 
-/* Delete Company */
-async function deleteUser(req, res) {
+exports.updateSpace = updateSpace;
+
+/* Delete A space */
+let deleteSpace = async (req, res) => {
     try {
         const id = req.params.id;
-        const user = await User.findById(id);
-        // res.send(user);
-        if(id == req.user._id)
-        {
-            throw new Error('You are not allowed to find this user');
-        }
-        if(user.role == '0x44')
-        {
-            throw new Error('You are not allowed to delete this user');
-        }
-
-        data = User.deleteOne({ _id: id});
+        const space = await Spacelot.findById(id);
+        
+        data = space.deleteOne({ _id: id});
         // res.send(`Document with ${data.name} has been deleted..`)
         res.status(200).json({
             status: "success",
@@ -179,4 +163,4 @@ async function deleteUser(req, res) {
     res.end();
 }
 
-exports.deleteUser = deleteUser;
+exports.deleteSpace = deleteSpace;
